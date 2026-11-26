@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#7066e8">
+<meta name="description" content="TamaList - aplikasi pengelola tugas sekolah untuk siswa.">
+<title>TamaList — Student Productivity</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+:root{--bg:#f7f8fc;--white:#fff;--text:#20243a;--muted:#9298aa;--primary:#7066e8;--primary-light:#efedff;--border:#eceef4;--green:#23a879;--red:#e66d78}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{display:flex;min-height:100vh}
+.sidebar{width:245px;background:white;border-right:1px solid var(--border);padding:28px 20px;position:fixed;height:100vh;display:flex;flex-direction:column;z-index:5}
+.logo{display:flex;align-items:center;gap:11px;font-size:22px;font-weight:800;margin-bottom:42px}
+.logo-icon{background:var(--primary);color:white;width:39px;height:39px;display:grid;place-items:center;border-radius:12px;font-size:22px}
+.nav-label{color:var(--muted);font-size:11px;font-weight:700;letter-spacing:1.2px;margin:20px 0 12px 10px}
+.nav-item{border:0;background:transparent;padding:12px;border-radius:10px;text-align:left;display:flex;gap:12px;align-items:center;color:#747b90;width:100%;margin-bottom:5px;font-size:13px;font-weight:600}
+.nav-item:hover,.nav-item.active{background:var(--primary-light);color:var(--primary)}
+.sidebar-bottom{margin-top:auto}
+.profile{border-top:1px solid var(--border);padding-top:20px;display:flex;gap:10px;align-items:center}
+.avatar{width:38px;height:38px;background:#e7e4ff;color:var(--primary);display:grid;place-items:center;border-radius:12px;font-weight:800;flex-shrink:0}
+.profile small{color:var(--muted);font-size:11px}
+.logout-btn{border:0;background:transparent;color:var(--red);font-size:11px;margin-top:5px}
+.main{margin-left:245px;width:calc(100% - 245px);padding:35px 45px;max-width:1600px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:36px;gap:15px}
+.greeting h1{font-size:25px;font-weight:800}.greeting p{color:var(--muted);font-size:13px;margin-top:7px}
+.top-actions{display:flex;gap:10px}
+.btn{border:0;padding:12px 17px;border-radius:10px;font-weight:700;font-size:12px;transition:.2s}
+.btn-primary{background:var(--primary);color:white}.btn-primary:hover{background:#5b50d3;transform:translateY(-1px)}
+.btn-light{background:white;border:1px solid var(--border);color:var(--text)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:17px;margin-bottom:28px}
+.stat-card{background:white;padding:22px;border:1px solid var(--border);border-radius:15px}
+.stat-top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px}
+.stat-icon{width:34px;height:34px;display:grid;place-items:center;background:var(--primary-light);border-radius:10px;color:var(--primary);font-size:17px}
+.stat-card h2{font-size:27px;margin:12px 0 4px}.stat-card small{color:var(--muted);font-size:11px}
+.content-grid{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px}
+.panel{background:white;border:1px solid var(--border);border-radius:16px;padding:23px;min-width:0}
+.panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:23px;gap:10px}
+.panel-header h3{font-size:16px}.panel-header p{color:var(--muted);font-size:11px;margin-top:5px}
+.filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px}
+.filter{padding:8px 13px;border:1px solid var(--border);background:white;border-radius:8px;color:#858b9c;font-size:11px}
+.filter.active{background:var(--primary-light);color:var(--primary);border-color:transparent;font-weight:700}
+.task{display:flex;align-items:center;gap:12px;padding:15px 0;border-bottom:1px solid #f0f1f5}
+.task:last-child{border-bottom:0}.task-check{width:19px;height:19px;accent-color:var(--primary);cursor:pointer;flex-shrink:0}
+.task-info{flex:1;min-width:0}.task-info h4{font-size:13px;font-weight:700;overflow-wrap:anywhere}
+.task-info p{color:var(--muted);font-size:10px;margin-top:5px}.task.done h4{text-decoration:line-through;color:#aeb2bf}
+.task-actions{display:flex;align-items:center;gap:8px}.tag{padding:5px 8px;border-radius:6px;font-size:9px;font-weight:700;white-space:nowrap}
+.high{background:#fff0f0;color:#e36d77}.medium{background:#fff5e6;color:#db9b37}.low{background:#e8f8f1;color:#2b9d78}
+.delete-btn{border:0;background:transparent;color:#b8bdc9;font-size:17px}.delete-btn:hover{color:var(--red)}
+.empty{padding:35px 10px;text-align:center;color:var(--muted);font-size:13px}
+.progress-card{background:linear-gradient(135deg,#7066e8,#9285f4);padding:22px;border-radius:15px;color:white;margin-bottom:20px}
+.progress-card p{font-size:11px;opacity:.8}.progress-card h2{font-size:30px;margin:12px 0}
+.progress-track{height:7px;background:#ffffff45;border-radius:20px;overflow:hidden}
+.progress-fill{height:100%;background:white;border-radius:20px;width:0;transition:.3s}
+.progress-card small{display:block;margin-top:10px;opacity:.8;font-size:10px}
+.subject{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid #f0f1f5;font-size:12px}
+.subject:last-child{border-bottom:0}.subject span:last-child{color:var(--muted)}
+.modal-overlay{position:fixed;inset:0;background:#17172a75;display:none;align-items:center;justify-content:center;padding:15px;z-index:20}
+.modal-overlay.show{display:flex}.modal{background:white;border-radius:18px;padding:27px;width:100%;max-width:430px;max-height:90vh;overflow:auto}
+.modal h2{font-size:20px;margin-bottom:7px}.modal>p{color:var(--muted);font-size:12px;margin-bottom:22px}
+.form-group{margin-bottom:15px}.form-group label{display:block;font-size:12px;font-weight:700;margin-bottom:7px}
+.form-group input,.form-group select{width:100%;padding:12px;border:1px solid var(--border);border-radius:9px;outline:none;background:white;font-size:12px;color:var(--text)}
+.form-group input:focus,.form-group select:focus{border-color:var(--primary)}
+.form-buttons{display:flex;gap:10px;margin-top:22px}.form-buttons button{flex:1}
+.mobile-menu{display:none}
+.auth-screen{position:fixed;inset:0;z-index:100;background:#f7f8fc;display:flex;justify-content:center;align-items:center;padding:20px}
+.auth-card{width:100%;max-width:400px;background:white;padding:35px;border-radius:20px;border:1px solid var(--border);box-shadow:0 15px 50px #20243a0c}
+.auth-logo{text-align:center;margin-bottom:28px}.auth-logo .logo-icon{margin:0 auto 12px}.auth-logo h2{font-size:25px}.auth-logo p{font-size:12px;color:var(--muted);margin-top:7px}
+.auth-card h3{font-size:19px;margin-bottom:7px}.auth-description{color:var(--muted);font-size:12px;margin-bottom:23px}
+.auth-card .form-group{margin-bottom:17px}.auth-submit{width:100%;margin-top:5px}
+.auth-switch{text-align:center;font-size:12px;margin-top:22px;color:var(--muted)}
+.auth-switch button{color:var(--primary);background:none;border:0;font-weight:700}
+.auth-error{color:var(--red);font-size:12px;margin-bottom:12px;min-height:16px}
+@media(max-width:1100px){.stats{grid-template-columns:repeat(2,1fr)}.content-grid{grid-template-columns:1fr}}
+@media(max-width:700px){.sidebar{display:none}.main{margin:0;width:100%;padding:23px 17px 35px}.topbar{align-items:flex-start}.greeting h1{font-size:21px}.top-actions{flex-wrap:wrap;justify-content:flex-end}.top-actions .btn{padding:10px}.stats{gap:10px}.stat-card{padding:15px}.stat-card h2{font-size:23px}.panel{padding:16px}.tag{display:none}.mobile-menu{display:flex;gap:8px;margin-bottom:22px}.mobile-menu button{flex:1;padding:10px 5px}.task{gap:9px}.task-info h4{font-size:12px}}
+</style>
+</head>
+<body>
+
+<!-- Login and registration -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-icon">✓</div>
+      <h2>TamaList</h2>
+      <p>Your school life, all in one place.</p>
+    </div>
+
+    <section id="loginForm">
+      <h3>Selamat datang kembali!</h3>
+      <p class="auth-description">Login untuk mengatur tugas sekolahmu.</p>
+      <div class="auth-error" id="loginError" role="alert"></div>
+      <form onsubmit="login(event)">
+        <div class="form-group">
+          <label for="loginUsername">Username</label>
+          <input id="loginUsername" autocomplete="username" required placeholder="Masukkan username">
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Masukkan password">
+        </div>
+        <button class="btn btn-primary auth-submit" type="submit">Login</button>
+      </form>
+      <div class="auth-switch">Belum punya akun? <button type="button" onclick="showRegister()">Daftar sekarang</button></div>
+    </section>
+
+    <section id="registerForm" hidden>
+      <h3>Buat akun baru</h3>
+      <p class="auth-description">Mulai atur aktivitas sekolahmu!</p>
+      <div class="auth-error" id="registerError" role="alert"></div>
+      <form onsubmit="register(event)">
+        <div class="form-group">
+          <label for="registerName">Nama lengkap</label>
+          <input id="registerName" autocomplete="name" required maxlength="60" placeholder="Nama kamu">
+        </div>
+        <div class="form-group">
+          <label for="registerUsername">Username</label>
+          <input id="registerUsername" autocomplete="username" required minlength="3" maxlength="24" pattern="[A-Za-z0-9_]+" placeholder="Buat username (huruf/angka/_)">
+        </div>
+        <div class="form-group">
+          <label for="registerPassword">Password</label>
+          <input id="registerPassword" type="password" autocomplete="new-password" required minlength="6" placeholder="Minimal 6 karakter">
+        </div>
+        <button class="btn btn-primary auth-submit" type="submit">Buat Akun</button>
+      </form>
+      <div class="auth-switch">Sudah punya akun? <button type="button" onclick="showLogin()">Login</button></div>
+    </section>
+    <p style="font-size:10px;color:#9298aa;text-align:center;margin-top:22px">Demo lokal · Data hanya tersimpan di browser ini</p>
+  </div>
+</div>
+
+<div class="app" id="app" style="display:none">
+  <aside class="sidebar">
+    <div class="logo"><div class="logo-icon">✓</div>TamaList</div>
+    <div class="nav-label">MENU UTAMA</div>
+    <button class="nav-item active" data-mode="all" onclick="setMode('all',this)">▦ Dashboard</button>
+    <button class="nav-item" data-mode="personal" onclick="setMode('personal',this)">◷ Tugas Pribadi</button>
+    <button class="nav-item" data-mode="shared" onclick="setMode('shared',this)">◉ Tugas Bersama</button>
+    <div class="nav-label">LAINNYA</div>
+    <button class="nav-item" onclick="showSubjects()">▤ Mata Pelajaran</button>
+    <button class="nav-item" onclick="setFilter('completed')">✓ Tugas Selesai</button>
+    <div class="sidebar-bottom">
+      <div class="profile">
+        <div class="avatar" id="studentAvatar">S</div>
+        <div style="min-width:0">
+          <strong id="studentName" style="font-size:12px">Student User</strong><br>
+          <small>Pelajar TamaList</small><br>
+          <button class="logout-btn" onclick="logout()">Logout ↗</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="mobile-menu">
+      <button class="btn btn-light" onclick="setMode('all')">Semua</button>
+      <button class="btn btn-light" onclick="setMode('personal')">Pribadi</button>
+      <button class="btn btn-light" onclick="setMode('shared')">Bersama</button>
+    </div>
+
+    <header class="topbar">
+      <div class="greeting">
+        <h1>Dashboard 👋</h1>
+        <p>Atur tugasmu dan capai target belajarmu!</p>
+      </div>
+      <div class="top-actions">
+        <button class="btn btn-light" onclick="exportTasks()">↓ Export CSV</button>
+        <button class="btn btn-primary" onclick="openModal()">+ Tambah Tugas</button>
+      </div>
+    </header>
+
+    <section class="stats">
+      <div class="stat-card"><div class="stat-top">Total Tugas <div class="stat-icon">▤</div></div><h2 id="total">0</h2><small>Semua tugas</small></div>
+      <div class="stat-card"><div class="stat-top">Selesai <div class="stat-icon">✓</div></div><h2 id="completed">0</h2><small>Tugas diselesaikan</small></div>
+      <div class="stat-card"><div class="stat-top">Belum Selesai <div class="stat-icon">◷</div></div><h2 id="pending">0</h2><small>Perlu dikerjakan</small></div>
+      <div class="stat-card"><div class="stat-top">Deadline Lewat <div class="stat-icon">!</div></div><h2 id="overdue">0</h2><small>Tugas melewati deadline</small></div>
+    </section>
+
+    <section class="content-grid">
+      <div class="panel">
+        <div class="panel-header"><div><h3 id="taskHeading">Daftar Tugas</h3><p>Kelola semua pekerjaan sekolahmu</p></div></div>
+        <div class="filters">
+          <button class="filter active" data-filter="all" onclick="setFilter('all',this)">Semua</button>
+          <button class="filter" data-filter="pending" onclick="setFilter('pending',this)">Belum Selesai</button>
+          <button class="filter" data-filter="completed" onclick="setFilter('completed',this)">Selesai</button>
+          <button class="filter" data-filter="high" onclick="setFilter('high',this)">Prioritas Tinggi</button>
+        </div>
+        <div id="taskList"></div>
+      </div>
+      <aside>
+        <div class="progress-card">
+          <p>PROGRESS BELAJARMU</p>
+          <h2 id="percentage">0%</h2>
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+          <small id="progressText">Mulai kerjakan tugas pertamamu!</small>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div><h3>Mata Pelajaran</h3><p>Ringkasan tugas per pelajaran</p></div></div>
+          <div id="subjectList"></div>
+        </div>
+      </aside>
+    </section>
+  </main>
+</div>
+
+<!-- Add task dialog -->
+<div class="modal-overlay" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <h2 id="modalTitle">Tambah Tugas Baru</h2>
+    <p>Jangan biarkan tugas sekolahmu menumpuk!</p>
+    <form id="taskForm">
+      <div class="form-group"><label for="taskName">Nama Tugas</label><input id="taskName" maxlength="120" placeholder="Contoh: Mengerjakan Matematika" required></div>
+      <div class="form-group"><label for="subject">Mata Pelajaran</label>
+        <select id="subject">
+          <option>Matematika</option><option>Bahasa Indonesia</option><option>Bahasa Inggris</option><option>Desain Grafis</option><option>Fotografi</option><option>IPA</option><option>IPS</option><option>Lainnya</option>
+        </select>
+      </div>
+      <div class="form-group"><label for="deadline">Deadline</label><input type="date" id="deadline" required></div>
+      <div class="form-group"><label for="priority">Prioritas</label><select id="priority"><option value="low">Rendah</option><option value="medium" selected>Sedang</option><option value="high">Tinggi</option></select></div>
+      <div class="form-group"><label for="type">Jenis Tugas</label><select id="type"><option value="personal">Pribadi</option><option value="shared">Bersama</option></select></div>
+      <div class="form-buttons">
+        <button type="button" class="btn btn-light" onclick="closeModal()">Batal</button>
+        <button type="submit" class="btn btn-primary">Simpan Tugas</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+let tasks = [];
+let currentUser = null;
+let currentMode = 'all';
+let currentFilter = 'all';
+
+const $ = id => document.getElementById(id);
+
+function getAccounts() {
+  try { return JSON.parse(localStorage.getItem('tamalist_accounts') || '{}'); }
+  catch { return {}; }
+}
+function saveAccounts(accounts) {
+  localStorage.setItem('tamalist_accounts', JSON.stringify(accounts));
+}
+function taskStorageKey() {
+  return 'tamalist_tasks_' + currentUser.username;
+}
+function save() {
+  if (!currentUser) return;
+  localStorage.setItem(taskStorageKey(), JSON.stringify(tasks));
+}
+
+function showLogin() {
+  $('loginForm').hidden = false;
+  $('registerForm').hidden = true;
+  $('loginError').textContent = '';
+}
+function showRegister() {
+  $('loginForm').hidden = true;
+  $('registerForm').hidden = false;
+  $('registerError').textContent = '';
+}
+
+function register(event) {
+  event.preventDefault();
+  const name = $('registerName').value.trim();
+  const username = $('registerUsername').value.trim().toLowerCase();
+  const password = $('registerPassword').value;
+  const accounts = getAccounts();
+
+  if (!/^[a-z0-9_]{3,24}$/.test(username)) {
+    $('registerError').textContent = 'Username harus 3–24 karakter (huruf, angka, underscore).';
+    return;
+  }
+  if (accounts[username]) {
+    $('registerError').textContent = 'Username sudah digunakan!';
+    return;
+  }
+
+  // Demo only: password is stored locally in plain text. Do not use real passwords.
+  accounts[username] = { name, username, password };
+  saveAccounts(accounts);
+  $('registerForm').querySelector('form').reset();
+  startSession(accounts[username]);
+}
+
+function login(event) {
+  event.preventDefault();
+  const username = $('loginUsername').value.trim().toLowerCase();
+  const password = $('loginPassword').value;
+  const account = getAccounts()[username];
+
+  if (!account || account.password !== password) {
+    $('loginError').textContent = 'Username atau password salah!';
+    return;
+  }
+  startSession(account);
+}
+
+function startSession(account) {
+  currentUser = account;
+  localStorage.setItem('tamalist_active_user', account.username);
+  try {
+    tasks = JSON.parse(localStorage.getItem(taskStorageKey()) || '[]');
+    if (!Array.isArray(tasks)) tasks = [];
+  } catch { tasks = []; }
+
+  $('authScreen').style.display = 'none';
+  $('app').style.display = 'flex';
+  $('studentName').textContent = account.name;
+  $('studentAvatar').textContent = account.name.charAt(0).toUpperCase();
+  currentMode = 'all';
+  currentFilter = 'all';
+  updateNavigation();
+  render();
+}
+
+function logout() {
+  if (!confirm('Yakin ingin logout?')) return;
+  save();
+  currentUser = null;
+  tasks = [];
+  localStorage.removeItem('tamalist_active_user');
+  $('app').style.display = 'none';
+  $('authScreen').style.display = 'flex';
+  $('loginUsername').value = '';
+  $('loginPassword').value = '';
+  showLogin();
+}
+
+function initializeAuth() {
+  const username = localStorage.getItem('tamalist_active_user');
+  const account = username ? getAccounts()[username] : null;
+  if (account) startSession(account);
+  else {
+    $('authScreen').style.display = 'flex';
+    $('app').style.display = 'none';
+    showLogin();
+  }
+}
+
+function openModal() {
+  $('modal').classList.add('show');
+  $('taskName').focus();
+}
+function closeModal() {
+  $('modal').classList.remove('show');
+  $('taskForm').reset();
+}
+$('modal').addEventListener('click', event => {
+  if (event.target === $('modal')) closeModal();
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') closeModal();
+});
+
+$('taskForm').addEventListener('submit', event => {
+  event.preventDefault();
+  if (!currentUser) return;
+  const task = {
+    id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random()),
+    name: $('taskName').value.trim(),
+    subject: $('subject').value,
+    deadline: $('deadline').value,
+    priority: $('priority').value,
+    type: $('type').value,
+    done: false
+  };
+  if (!task.name) return;
+  tasks.unshift(task);
+  save();
+  render();
+  closeModal();
+});
+
+function setMode(mode, button) {
+  currentMode = mode;
+  currentFilter = 'all';
+  updateNavigation();
+  document.querySelectorAll('.filter').forEach(el => el.classList.toggle('active', el.dataset.filter === 'all'));
+  $('taskHeading').textContent = {all:'Daftar Tugas',personal:'Tugas Pribadi',shared:'Tugas Bersama'}[mode];
+  render();
+}
+function updateNavigation() {
+  document.querySelectorAll('.nav-item[data-mode]').forEach(el => el.classList.toggle('active', el.dataset.mode === currentMode));
+  $('taskHeading').textContent = {all:'Daftar Tugas',personal:'Tugas Pribadi',shared:'Tugas Bersama'}[currentMode];
+}
+function setFilter(filter, button) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter').forEach(el => el.classList.toggle('active', el.dataset.filter === filter));
+  render();
+}
+function toggleTask(id) {
+  tasks = tasks.map(task => task.id === id ? {...task, done:!task.done} : task);
+  save();
+  render();
+}
+function deleteTask(id) {
+  if (!confirm('Yakin ingin menghapus tugas ini?')) return;
+  tasks = tasks.filter(task => task.id !== id);
+  save();
+  render();
+}
+function escapeHTML(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  })[char]);
+}
+
+function render() {
+  const visible = tasks.filter(task => {
+    if (currentMode !== 'all' && task.type !== currentMode) return false;
+    if (currentFilter === 'pending' && task.done) return false;
+    if (currentFilter === 'completed' && !task.done) return false;
+    if (currentFilter === 'high' && task.priority !== 'high') return false;
+    return true;
+  });
+
+  if (!visible.length) {
+    $('taskList').innerHTML = '<div class="empty"><div style="font-size:32px;margin-bottom:10px">📚</div>Belum ada tugas di sini.<br>Yuk, tambahkan tugas barumu!</div>';
+  } else {
+    $('taskList').innerHTML = visible.map(task => {
+      const priorityName = {high:'Tinggi',medium:'Sedang',low:'Rendah'};
+      const date = task.deadline ? new Date(task.deadline + 'T00:00:00').toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : 'Tanpa deadline';
+      return `<div class="task ${task.done ? 'done' : ''}">
+        <input class="task-check" type="checkbox" aria-label="Tandai ${escapeHTML(task.name)} selesai" ${task.done ? 'checked' : ''} onchange="toggleTask('${String(task.id).replace(/'/g,"\\'")}')">
+        <div class="task-info"><h4>${escapeHTML(task.name)}</h4><p>${escapeHTML(task.subject)} · ${date} · ${task.type === 'shared' ? '👥 Bersama' : '👤 Pribadi'}</p></div>
+        <div class="task-actions"><span class="tag ${task.priority}">${priorityName[task.priority] || 'Sedang'}</span>
+        <button class="delete-btn" onclick="deleteTask('${String(task.id).replace(/'/g,"\\'")}')" aria-label="Hapus tugas" title="Hapus tugas">×</button></div>
+      </div>`;
+    }).join('');
+  }
+  updateStats();
+  updateSubjects();
+}
+
+function updateStats() {
+  const total = tasks.length;
+  const completed = tasks.filter(t => t.done).length;
+  const pending = total - completed;
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const overdue = tasks.filter(t => !t.done && t.deadline && new Date(t.deadline + 'T00:00:00') < today).length;
+  const percent = total ? Math.round(completed / total * 100) : 0;
+
+  $('total').textContent = total;
+  $('completed').textContent = completed;
+  $('pending').textContent = pending;
+  $('overdue').textContent = overdue;
+  $('percentage').textContent = percent + '%';
+  $('progressFill').style.width = percent + '%';
+  $('progressText').textContent = total ? `${completed} dari ${total} tugas sudah selesai` : 'Mulai kerjakan tugas pertamamu!';
+}
+function updateSubjects() {
+  const subjects = {};
+  tasks.forEach(task => { subjects[task.subject] = (subjects[task.subject] || 0) + 1; });
+  const entries = Object.entries(subjects);
+  $('subjectList').innerHTML = entries.length
+    ? entries.map(([name,count]) => `<div class="subject"><span>${escapeHTML(name)}</span><span>${count} tugas</span></div>`).join('')
+    : '<div class="empty">Belum ada mata pelajaran</div>';
+}
+function showSubjects() {
+  $('subjectList').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function exportTasks() {
+  if (!tasks.length) {
+    alert('Belum ada tugas untuk diexport!');
+    return;
+  }
+  const headers = ['Nama Tugas','Mata Pelajaran','Deadline','Prioritas','Jenis Tugas','Status'];
+  const rows = tasks.map(task => [
+    task.name, task.subject, task.deadline,
+    task.priority, task.type === 'shared' ? 'Bersama' : 'Pribadi',
+    task.done ? 'Selesai' : 'Belum Selesai'
+  ]);
+  const escapeCSV = value => '"' + String(value ?? '').replace(/"/g,'""') + '"';
+  const csv = [headers,...rows].map(row => row.map(escapeCSV).join(';')).join('\r\n');
+  const blob = new Blob(['\uFEFF' + csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'TamaList_Tugas.csv';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url),1000);
+}
+
+initializeAuth();
+</script>
+</body>
+</html>
